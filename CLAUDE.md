@@ -98,7 +98,7 @@ KCPC는 `.txt`, `.csv`, `.xlsx` 첫 번째 열의 영어 키워드 목록을 입
 1. 입력 파일 탐지 및 파싱
 2. 키워드 정제 및 중복 처리
 3. SQLite 체크포인트 초기화/복구
-4. 키워드별 `intitle:"{keyword}"` DuckDuckGo 검색
+4. 키워드별 DuckDuckGo 검색 (일반 검색 후 title 2차 검증)
 5. 반환 결과 `title` 필드 대소문자 무시 포함 검사
 6. 키워드 1건마다 DB 즉시 commit
 7. 미완료 항목 반복 처리
@@ -113,8 +113,7 @@ KCPC는 `.txt`, `.csv`, `.xlsx` 첫 번째 열의 영어 키워드 목록을 입
 - 모든 함수에 타입 힌트를 작성한다.
 - 모듈 책임은 `docs/module-contracts.md`와 일치시킨다.
 - 진행률은 `tqdm` 없이 콘솔 한 줄 갱신 방식으로 표시한다.
-- DuckDuckGo만 사용하고 쿼리는 `intitle:"{keyword}"` 형식을 사용한다.
-- `intitle:`가 무시될 수 있으므로 title 2차 검증을 반드시 유지한다.
+- DuckDuckGo만 사용하고 일반 검색을 수행한 후 title 2차 검증으로 매칭 수를 측정한다.
 - 요청 사이에는 `DDG_MIN_DELAY`~`DDG_MAX_DELAY` 딜레이를 강제한다 (단, `DDG_IGNORE_DELAY=true` 시 제외).
 - 네트워크 실패는 최대 `DDG_MAX_RETRIES`회 재시도 후 해당 키워드만 `FAILED`, `-1`로 기록한다.
 

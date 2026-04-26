@@ -23,12 +23,19 @@ from kcpc.signal_handler import is_shutdown_requested
 logger = get_logger()
 
 
-def run_pipeline(input_file: str, reset: bool = False) -> None:
+def run_pipeline(
+    input_file: str,
+    reset: bool = False,
+    output_path: str | None = None,
+    output_format: str | None = None,
+) -> None:
     """Run the complete KCPC measurement pipeline.
 
     Args:
         input_file: Path to the input file.
         reset: If True, reset existing database and start fresh.
+        output_path: Optional custom output path.
+        output_format: Optional custom output format ("xlsx" or "csv").
 
     Raises:
         ValidationError: If input file is invalid.
@@ -36,6 +43,10 @@ def run_pipeline(input_file: str, reset: bool = False) -> None:
     """
     config = get_config()
     logger.info(f"KCPC pipeline started with input: {input_file}")
+
+    # Use provided values or fall back to config
+    final_output_path = output_path or config.output_file_path
+    final_output_format = output_format or config.output_format
 
     # Step 1: Parse input file
     logger.info("Step 1: Parsing input file...")
@@ -82,7 +93,7 @@ def run_pipeline(input_file: str, reset: bool = False) -> None:
         # Step 8: Export results
         logger.info("Step 8: Exporting results...")
         measurements = db.get_all()
-        export_results(measurements)
+        export_results(measurements, output_path=final_output_path, format=final_output_format)
 
     logger.info("Pipeline completed successfully")
 

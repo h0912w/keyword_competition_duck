@@ -146,8 +146,9 @@ def _attempt_search(
         # Create DDGS instance with headers
         ddgs = DDGS(headers=headers, **ddgs_params)
 
-        # Perform search with intitle: operator
-        query = f'intitle:"{keyword}"'
+        # Perform search (intitle: operator is unreliable in DDG)
+        # We rely on 2nd validation to count title matches instead
+        query = keyword
         logger.debug(f"Searching for: {query}")
 
         results = list(ddgs.text(

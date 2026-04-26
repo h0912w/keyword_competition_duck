@@ -79,14 +79,13 @@ def main() -> int:
         # Get config
         config = get_config()
 
-        # Override config with command line arguments
-        if args.output:
-            config.output_file_path = args.output
-        if args.format:
-            config.output_format = args.format
-
-        # Run pipeline
-        run_pipeline(args.input, reset=args.reset)
+        # Run pipeline with CLI arguments
+        run_pipeline(
+            args.input,
+            reset=args.reset,
+            output_path=args.output,
+            output_format=args.format,
+        )
 
         return 0
 
