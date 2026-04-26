@@ -1,0 +1,14 @@
+# DuckDuckGo 프록시 목록 예시
+# DDG_USE_PROXY=true일 때 사용됩니다
+# 한 줄당 하나의 프록시 주소를 입력합니다
+# 형식: http://host:port 또는 https://host:port 또는 socks5://host:port
+
+# HTTP 프록시 예시
+# http://proxy1.example.com:8080
+# http://proxy2.example.com:8080
+
+# HTTPS 프록시 예시
+# https://secure-proxy.example.com:8443
+
+# SOCKS5 프록시 예시
+# socks5://socks-proxy.example.com:1080
