@@ -40,6 +40,12 @@ class Config:
     output_file_path: str
     output_format: Literal["xlsx", "csv"]
 
+    # QA-specific Google Search API settings
+    google_api_key: str | None
+    google_search_engine_id: str | None
+    qa_use_google_api: bool
+    qa_max_google_queries: int
+
     @classmethod
     def from_env(cls) -> "Config":
         """Create Config from environment variables.
@@ -81,6 +87,12 @@ class Config:
             "xlsx" if output_format_raw in ("xlsx", "XLSX") else "csv"
         )
 
+        # QA-specific Google API settings
+        google_api_key = os.getenv("GOOGLE_API_KEY")
+        google_search_engine_id = os.getenv("GOOGLE_SEARCH_ENGINE_ID")
+        qa_use_google_api = parse_bool(os.getenv("QA_USE_GOOGLE_API"), False)
+        qa_max_google_queries = int(os.getenv("QA_MAX_GOOGLE_QUERIES", "10"))
+
         return cls(
             ddg_min_delay=ddg_min_delay,
             ddg_max_delay=ddg_max_delay,
@@ -98,6 +110,10 @@ class Config:
             log_file_path=log_file_path,
             output_file_path=output_file_path,
             output_format=output_format,
+            google_api_key=google_api_key,
+            google_search_engine_id=google_search_engine_id,
+            qa_use_google_api=qa_use_google_api,
+            qa_max_google_queries=qa_max_google_queries,
         )
 
     def ensure_directories(self) -> None:

@@ -136,5 +136,7 @@ KCPC는 `.txt`, `.csv`, `.xlsx` 첫 번째 열의 영어 키워드 목록을 입
 - SQLite DB와 로그 파일이 생성된다.
 - 중단 후 재실행 시 이어서 진행한다.
 - 최종 Excel/CSV가 지정 경로에 생성된다.
+- **QA 시 Google Search API로 실제 검색 결과 수를 검증한다** (QA 전용).
+- **DDG 측정값과 Google API 측정값의 상관관계를 분석한다**.
 - QA 리포트 최종 판정이 PASS다.
 - `docs/source-requirements-map.md` 기준 원본 설계서 대비 누락 0% 검토가 완료됐다.

@@ -22,6 +22,13 @@ DDG_IGNORE_DELAY=false
 # SSL 검증 우회
 DDG_IGNORE_SSL=false
 
+# QA 전용 Google Search API 설정
+# QA 시에만 Google 정식 API를 사용하여 신뢰성 검증
+GOOGLE_API_KEY=your_google_api_key_here
+GOOGLE_SEARCH_ENGINE_ID=your_search_engine_id_here
+QA_USE_GOOGLE_API=true
+QA_MAX_GOOGLE_QUERIES=10
+
 # 데이터베이스 및 출력 경로
 DB_FILE_PATH=./data/kcpc_database.db
 LOG_FILE_PATH=./logs/kcpc.log
