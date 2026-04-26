@@ -6,6 +6,7 @@ __pycache__/
 /logs/*.log
 /output/*.xlsx
 /output/*.csv
+/output/qa/*.xlsx
 /output/qa/*.md
 /input/*
 !/input/.gitkeep
@@ -13,3 +14,18 @@ __pycache__/
 !/output/qa/.gitkeep
 !/data/.gitkeep
 !/logs/.gitkeep
+
+# QA test outputs
+/input/qa/*
+
+# Screenshots
+*.png
+*.jpg
+*.jpeg
+!docs/images/*.png
+!docs/images/*.jpg
+!docs/images/*.jpeg
+
+# Sample outputs
+ddg_results_sample.json
+test_api_key.py
