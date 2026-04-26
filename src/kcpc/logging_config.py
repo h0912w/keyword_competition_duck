@@ -45,6 +45,12 @@ def setup_logging() -> logging.Logger:
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(console_formatter)
 
+    # Set UTF-8 encoding for console output (Windows)
+    if sys.platform == "win32":
+        import io
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)
 

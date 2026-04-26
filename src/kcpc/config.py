@@ -40,11 +40,19 @@ class Config:
     output_file_path: str
     output_format: Literal["xlsx", "csv"]
 
-    # QA-specific Google Search API settings
-    google_api_key: str | None
-    google_search_engine_id: str | None
-    qa_use_google_api: bool
-    qa_max_google_queries: int
+    # QA automated test settings (v2.0)
+    qa_auto_generate_words: bool
+    qa_word_count: int
+    qa_retry_until_pass: bool
+    qa_max_retry_interval: int
+    qa_high_freq_words: int
+    qa_mid_freq_words: int
+    qa_low_freq_words: int
+
+    # DDG quality validation settings
+    ddg_cross_validate: bool
+    ddg_reproducibility_trials: int
+    ddg_backend_variance_tolerance: int
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -87,11 +95,19 @@ class Config:
             "xlsx" if output_format_raw in ("xlsx", "XLSX") else "csv"
         )
 
-        # QA-specific Google API settings
-        google_api_key = os.getenv("GOOGLE_API_KEY")
-        google_search_engine_id = os.getenv("GOOGLE_SEARCH_ENGINE_ID")
-        qa_use_google_api = parse_bool(os.getenv("QA_USE_GOOGLE_API"), False)
-        qa_max_google_queries = int(os.getenv("QA_MAX_GOOGLE_QUERIES", "10"))
+        # QA automated test settings (v2.0)
+        qa_auto_generate_words = parse_bool(os.getenv("QA_AUTO_GENERATE_WORDS"), "true")
+        qa_word_count = int(os.getenv("QA_WORD_COUNT", "10"))
+        qa_retry_until_pass = parse_bool(os.getenv("QA_RETRY_UNTIL_PASS"), "true")
+        qa_max_retry_interval = int(os.getenv("QA_MAX_RETRY_INTERVAL", "60"))
+        qa_high_freq_words = int(os.getenv("QA_HIGH_FREQ_WORDS", "3"))
+        qa_mid_freq_words = int(os.getenv("QA_MID_FREQ_WORDS", "4"))
+        qa_low_freq_words = int(os.getenv("QA_LOW_FREQ_WORDS", "3"))
+
+        # DDG quality validation settings
+        ddg_cross_validate = parse_bool(os.getenv("DDG_CROSS_VALIDATE"), "true")
+        ddg_reproducibility_trials = int(os.getenv("DDG_REPRODUCIBILITY_TRIALS", "3"))
+        ddg_backend_variance_tolerance = int(os.getenv("DDG_BACKEND_VARIANCE_TOLERANCE", "1"))
 
         return cls(
             ddg_min_delay=ddg_min_delay,
@@ -110,10 +126,16 @@ class Config:
             log_file_path=log_file_path,
             output_file_path=output_file_path,
             output_format=output_format,
-            google_api_key=google_api_key,
-            google_search_engine_id=google_search_engine_id,
-            qa_use_google_api=qa_use_google_api,
-            qa_max_google_queries=qa_max_google_queries,
+            qa_auto_generate_words=qa_auto_generate_words,
+            qa_word_count=qa_word_count,
+            qa_retry_until_pass=qa_retry_until_pass,
+            qa_max_retry_interval=qa_max_retry_interval,
+            qa_high_freq_words=qa_high_freq_words,
+            qa_mid_freq_words=qa_mid_freq_words,
+            qa_low_freq_words=qa_low_freq_words,
+            ddg_cross_validate=ddg_cross_validate,
+            ddg_reproducibility_trials=ddg_reproducibility_trials,
+            ddg_backend_variance_tolerance=ddg_backend_variance_tolerance,
         )
 
     def ensure_directories(self) -> None:

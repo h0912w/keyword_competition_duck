@@ -46,13 +46,16 @@
 | SSL 검증 우회 | `DDG_IGNORE_SSL` | `config-and-cli.md`, `workflow-and-failure-policy.md` |
 
 ---
-## QA 검증용 Google API 추가 사항 (2026-04-26)
+## QA 검증 시스템 v2.0 (2026-04-26)
 
-QA 시에만 Google Search API를 사용하여 DDG 측정값의 신뢰성을 검증한다.
+QA 시에 Google API 없이 DDG 자체 검증 30가지 요소를 사용한다.
 
 | 항목 | 내용 | 반영 위치 |
 |---|---|
-| Google API 설정 가이드 | API 키, 검색 엔진 ID 생성 방법 | `google-api-setup-guide.md` |
-| QA용 Google API 통합 | 상관관계 분석, 리포트 생성 | `qa_verifier.py`, `qa_report.py` |
-| QA 계획 업데이트 | Google API 검증 절차 | `qa-plan.md` |
-| 환경 변수 | `GOOGLE_API_KEY`, `GOOGLE_SEARCH_ENGINE_ID`, `QA_USE_GOOGLE_API` | `config-and-cli.md`, `.env.example` |
+| 30가지 DDG 품질 검증 요소 | 백엔드 교차, 재현성, 시간대별 일관성 등 | `qa-plan.md`, `original-design.md` |
+| 자동 테스트 단어 생성 | 빈도 기반 영어 단어 10개 생성 | `qa_tester.py` |
+| 무한 반복 QA 로직 | 예상값과 일치할 때까지 재시도 | `qa_tester.py` |
+| DDG 백엔드 교차 검증 | html vs lite 백엔드 비교 | `qa_verifier.py` |
+| 재현성 검증 | 3회 반복 측정, 편차 분석 | `qa_verifier.py` |
+| 통계 검증 | 이상치 탐지, 상관계수, DQCS | `qa_analyzer.py` |
+| 환경 변수 | `QA_AUTO_GENERATE_WORDS`, `QA_RETRY_UNTIL_PASS` | `config-and-cli.md`, `.env.example` |

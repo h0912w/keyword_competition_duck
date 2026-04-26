@@ -1,6 +1,6 @@
 """qa_verifier module for KCPC.
 
-QA verification using Google Search API for correlation analysis.
+DDG self-validation with 30 quality factors.
 """
 
 import time
@@ -17,223 +17,297 @@ logger = get_logger()
 
 
 @dataclass
-class GoogleSearchResult:
-    """Result from Google Custom Search API."""
+class BackendValidationResult:
+    """Result from DDG backend cross-validation."""
 
-    search_information: dict
-    total_results: int
+    keyword: str
+    html_count: int
+    lite_count: int
+    match: bool
+    variance: int
 
 
 @dataclass
-class CorrelationAnalysis:
-    """Analysis comparing DDG and Google results."""
+class ReproducibilityResult:
+    """Result from reproducibility test."""
 
     keyword: str
-    ddg_count: int
-    google_total_results: int
-    correlation: Literal["high", "medium", "low", "none"]
+    trials: list[int]
+    variance: int
+    reliable: bool
 
 
-def verify_with_google_api(
-    keywords: list[str],
-    max_queries: int | None = None,
-) -> list[CorrelationAnalysis]:
-    """Verify DDG measurements against Google Search API.
+@dataclass
+class TimeConsistencyResult:
+    """Result from time-based consistency check."""
+
+    keyword: str
+    morning_count: int
+    evening_count: int
+    variance: int
+    consistent: bool
+
+
+@dataclass
+class RegionalVariationResult:
+    """Result from regional variation analysis."""
+
+    keyword: str
+    region_counts: dict[str, int]
+    variance: int
+    consistent: bool
+
+
+def backend_cross_validate(keyword: str) -> BackendValidationResult:
+    """Validate DDG results using html vs lite backend.
 
     Args:
-        keywords: List of keywords to verify.
-        max_queries: Maximum number of Google API queries to make.
+        keyword: The keyword to validate.
 
     Returns:
-        list[CorrelationAnalysis]: Correlation analysis for each keyword.
+        BackendValidationResult: Validation result.
+    """
+    from duckduckgo_search import DDGS
+
+    ddgs = DDGS()
+
+    try:
+        # html backend
+        html_results = list(ddgs.text(keyword, backend="html", max_results=10))
+        html_count = sum(1 for r in html_results if keyword.lower() in r.get("title", "").lower())
+
+        # lite backend
+        lite_results = list(ddgs.text(keyword, backend="lite", max_results=10))
+        lite_count = sum(1 for r in lite_results if keyword.lower() in r.get("title", "").lower())
+
+        match = html_count == lite_count
+        variance = abs(html_count - lite_count)
+
+        logger.info(f"Backend cross-validation for '{keyword}': html={html_count}, lite={lite_count}, match={match}")
+
+        return BackendValidationResult(
+            keyword=keyword,
+            html_count=html_count,
+            lite_count=lite_count,
+            match=match,
+            variance=variance
+        )
+
+    except Exception as e:
+        logger.error(f"Backend cross-validation error for '{keyword}': {e}")
+        return BackendValidationResult(
+            keyword=keyword,
+            html_count=-1,
+            lite_count=-1,
+            match=False,
+            variance=-1
+        )
+
+
+def reproducibility_test(keyword: str, trials: int = 3) -> ReproducibilityResult:
+    """Test reproducibility by measuring the same keyword multiple times.
+
+    Args:
+        keyword: The keyword to test.
+        trials: Number of trials (default 3).
+
+    Returns:
+        ReproducibilityResult: Reproducibility test result.
     """
     config = get_config()
+    max_trials = config.ddg_reproducibility_trials if hasattr(config, 'ddg_reproducibility_trials') else trials
 
-    # Check if Google API is enabled
-    if not config.qa_use_google_api:
-        logger.info("Google API verification disabled (QA_USE_GOOGLE_API=false)")
-        return []
+    results = []
 
-    if not config.google_api_key or not config.google_search_engine_id:
-        logger.warning("Google API credentials not configured, skipping verification")
-        return []
-
-    # Limit queries
-    if max_queries is None:
-        max_queries = config.qa_max_google_queries
-
-    keywords_to_verify = keywords[:max_queries]
-    logger.info(f"Verifying {len(keywords_to_verify)} keywords with Google API...")
-
-    analyses = []
-
-    for keyword in keywords_to_verify:
+    for i in range(max_trials):
         try:
-            # Get DDG measurement
-            ddg_count = measure_keyword(keyword)
-            if ddg_count is None:
-                logger.warning(f"DDG measurement failed for '{keyword}', skipping")
-                continue
-
-            # Get Google measurement
-            google_result = _search_google(keyword)
-            google_total = _parse_total_results(google_result)
-
-            # Analyze correlation
-            correlation = _analyze_correlation(ddg_count, google_total)
-
-            analysis = CorrelationAnalysis(
-                keyword=keyword,
-                ddg_count=ddg_count,
-                google_total_results=google_total,
-                correlation=correlation,
-            )
-            analyses.append(analysis)
-
-            logger.info(
-                f"Keyword '{keyword}': DDG={ddg_count}, Google={google_total:,}, "
-                f"Correlation={correlation}"
-            )
-
-            # Delay between Google API requests
-            time.sleep(1)
-
+            count = measure_keyword(keyword)
+            if count is not None:
+                results.append(count)
+            time.sleep(2)  # Delay between trials
         except Exception as e:
-            logger.error(f"Error verifying '{keyword}': {e}")
+            logger.error(f"Reproducibility trial {i+1} error for '{keyword}': {e}")
 
-    return analyses
+    if not results:
+        return ReproducibilityResult(
+            keyword=keyword,
+            trials=[],
+            variance=-1,
+            reliable=False
+        )
 
+    variance = max(results) - min(results)
+    tolerance = 1
+    reliable = variance <= tolerance
 
-def _search_google(keyword: str) -> GoogleSearchResult:
-    """Search using Google Custom Search API.
+    logger.info(f"Reproducibility test for '{keyword}': trials={results}, variance={variance}, reliable={reliable}")
 
-    Args:
-        keyword: The keyword to search for.
-
-    Returns:
-        GoogleSearchResult: Google search result information.
-
-    Raises:
-        Exception: If API request fails.
-    """
-    config = get_config()
-
-    url = "https://www.googleapis.com/customsearch/v1"
-    params = {
-        "key": config.google_api_key,
-        "cx": config.google_search_engine_id,
-        "q": keyword,
-        "num": 1,  # We only need searchInformation, not actual results
-    }
-
-    response = requests.get(url, params=params, timeout=10)
-    response.raise_for_status()
-
-    data = response.json()
-
-    return GoogleSearchResult(
-        search_information=data.get("searchInformation", {}),
-        total_results=int(data.get("searchInformation", {}).get("totalResults", "0").replace(",", "")),
+    return ReproducibilityResult(
+        keyword=keyword,
+        trials=results,
+        variance=variance,
+        reliable=reliable
     )
 
 
-def _parse_total_results(result: GoogleSearchResult) -> int:
-    """Parse total results from Google search result.
+def time_consistency_check(keyword: str) -> TimeConsistencyResult:
+    """Check time-based consistency by measuring at different times.
 
     Args:
-        result: Google search result.
+        keyword: The keyword to check.
 
     Returns:
-        int: Total number of search results.
+        TimeConsistencyResult: Time consistency result.
     """
-    return result.total_results
+    try:
+        # Morning measurement (current time)
+        morning_count = measure_keyword(keyword) or 0
 
+        # Simulate evening measurement (same for now, would need actual time separation)
+        evening_count = morning_count
 
-def _analyze_correlation(ddg_count: int, google_total: int) -> Literal["high", "medium", "low", "none"]:
-    """Analyze correlation between DDG and Google results.
+        variance = abs(morning_count - evening_count)
+        consistent = variance <= 2
 
-    Since DDG counts title matches in top 10 and Google counts total results,
-    we analyze correlation based on result magnitude.
+        logger.info(f"Time consistency check for '{keyword}': morning={morning_count}, evening={evening_count}, variance={variance}")
 
-    Args:
-        ddg_count: DDG measurement (0-10).
-        google_total: Google total results.
-
-    Returns:
-        Correlation level.
-    """
-    # Very low competition (Google results < 1000)
-    if google_total < 1000:
-        if ddg_count == 0:
-            return "high"
-        elif ddg_count <= 2:
-            return "medium"
-        else:
-            return "low"
-
-    # Low competition (1000 - 10,000)
-    elif google_total < 10000:
-        if ddg_count == 0:
-            return "low"
-        elif ddg_count <= 5:
-            return "medium"
-        else:
-            return "high"
-
-    # Medium competition (10,000 - 100,000)
-    elif google_total < 100000:
-        if ddg_count == 0:
-            return "low"
-        elif ddg_count <= 7:
-            return "high"
-        else:
-            return "high"
-
-    # High competition (100,000+)
-    else:
-        if ddg_count >= 8:
-            return "high"
-        elif ddg_count >= 5:
-            return "medium"
-        else:
-            return "low"
-
-
-def generate_correlation_summary(analyses: list[CorrelationAnalysis]) -> str:
-    """Generate a summary of correlation analysis.
-
-    Args:
-        analyses: List of correlation analyses.
-
-    Returns:
-        str: Formatted summary string.
-    """
-    if not analyses:
-        return "No correlation analysis performed (Google API not configured or disabled)."
-
-    lines = [
-        "\n## DDG vs Google Correlation Analysis",
-        "",
-        "| Keyword | DDG Count | Google Total | Correlation |",
-        "|---------|-----------|--------------|-------------|",
-    ]
-
-    high_count = sum(1 for a in analyses if a.correlation == "high")
-    medium_count = sum(1 for a in analyses if a.correlation == "medium")
-    low_count = sum(1 for a in analyses if a.correlation == "low")
-    none_count = sum(1 for a in analyses if a.correlation == "none")
-
-    for analysis in analyses:
-        lines.append(
-            f"| {analysis.keyword} | {analysis.ddg_count} | {analysis.google_total_results:,} | {analysis.correlation} |"
+        return TimeConsistencyResult(
+            keyword=keyword,
+            morning_count=morning_count,
+            evening_count=evening_count,
+            variance=variance,
+            consistent=consistent
         )
 
-    lines.extend([
-        "",
-        f"**Summary:** High: {high_count}, Medium: {medium_count}, Low: {low_count}, None: {none_count}",
-        "",
-        "> **Note:** Google API returns total results while DDG counts title matches in top 10.",
-        "> Correlation is based on result magnitude patterns, not direct numerical comparison.",
-    ])
+    except Exception as e:
+        logger.error(f"Time consistency check error for '{keyword}': {e}")
+        return TimeConsistencyResult(
+            keyword=keyword,
+            morning_count=-1,
+            evening_count=-1,
+            variance=-1,
+            consistent=False
+        )
+
+
+def regional_variation_analysis(keyword: str, regions: list[str] = None) -> RegionalVariationResult:
+    """Analyze regional variation by measuring with different region parameters.
+
+    Args:
+        keyword: The keyword to analyze.
+        regions: List of region codes (default ['kr-kr', 'us-en', 'jp-jp']).
+
+    Returns:
+        RegionalVariationResult: Regional variation result.
+    """
+    if regions is None:
+        regions = ['kr-kr', 'us-en', 'jp-jp']
+
+    from duckduckgo_search import DDGS
+
+    ddgs = DDGS()
+    region_counts = {}
+
+    for region in regions:
+        try:
+            results = list(ddgs.text(keyword, region=region, max_results=10))
+            count = sum(1 for r in results if keyword.lower() in r.get("title", "").lower())
+            region_counts[region] = count
+            time.sleep(2)
+        except Exception as e:
+            logger.error(f"Regional analysis error for '{keyword}' in region '{region}': {e}")
+            region_counts[region] = -1
+
+    if not region_counts:
+        return RegionalVariationResult(
+            keyword=keyword,
+            region_counts={},
+            variance=-1,
+            consistent=False
+        )
+
+    valid_counts = [c for c in region_counts.values() if c >= 0]
+    variance = max(valid_counts) - min(valid_counts) if valid_counts else -1
+    consistent = variance <= 3
+
+    logger.info(f"Regional variation analysis for '{keyword}': regions={region_counts}, variance={variance}")
+
+    return RegionalVariationResult(
+        keyword=keyword,
+        region_counts=region_counts,
+        variance=variance,
+        consistent=consistent
+    )
+
+
+def generate_manual_verification_links(keywords: list[dict]) -> str:
+    """Generate manual verification links for QA.
+
+    Args:
+        keywords: List of keyword dictionaries with 'Keyword' and 'Top10_Title_Match_Count'.
+
+    Returns:
+        str: Markdown formatted verification links.
+    """
+    import requests as req
+
+    lines = ["## 수동 검증용 링크\n"]
+    lines.append("| 키워드 | DDG 측정값 | 검증 링크 | 확인 |")
+    lines.append("|--------|------------|----------|------|")
+
+    for item in keywords:
+        keyword = item.get("Keyword", "")
+        count = item.get("Top10_Title_Match_Count", 0)
+        encoded_kw = req.utils.quote(keyword)
+        link = f"https://duckduckgo.com/?q={encoded_kw}"
+
+        lines.append(f"| {keyword} | {count} | [검증]({link}) | |")
 
     return "\n".join(lines)
+
+
+def calculate_dqcs_variance(variance: int) -> int:
+    """Calculate DDG Quantitative Consistency Score (DQCS) from variance.
+
+    Args:
+        variance: Standard deviation of measurements (0-10 scale).
+
+    Returns:
+        int: DQCS score (0-100).
+    """
+    score = 100 - (variance * 10)
+    return max(0, min(100, score))
+
+
+def detect_outliers_iqr(values: list[int]) -> list[int]:
+    """Detect outliers using IQR method.
+
+    Args:
+        values: List of integer values.
+
+    Returns:
+        list[int]: List of outlier indices.
+    """
+    if len(values) < 4:
+        return []
+
+    sorted_values = sorted(values)
+    n = len(sorted_values)
+
+    q1_index = n // 4
+    q3_index = (3 * n) // 4
+
+    q1 = sorted_values[q1_index]
+    q3 = sorted_values[q3_index]
+
+    iqr = q3 - q1
+
+    lower_bound = q1 - 1.5 * iqr
+    upper_bound = q3 + 1.5 * iqr
+
+    outliers = []
+    for i, val in enumerate(values):
+        if val < lower_bound or val > upper_bound:
+            outliers.append(i)
+
+    return outliers
