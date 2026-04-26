@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: kcpc
+Version: 0.1.0
+Summary: Keyword Competition Page Counter local batch tool
+Requires-Python: >=3.10
+Requires-Dist: duckduckgo-search>=6.0.0
+Requires-Dist: pandas>=2.0.0
+Requires-Dist: openpyxl>=3.1.0
+Requires-Dist: python-dotenv>=1.0.0
