@@ -30,6 +30,7 @@
 - `docs/config-and-cli.md`
 - `docs/database-schema.md`
 - `docs/glossary.md`
+- `docs/google-api-setup-guide.md`
 - `docs/implementation-sequence.md`
 - `docs/input-output-contract.md`
 - `docs/llm-vs-script-boundary.md`
@@ -45,6 +46,7 @@
 - `output/.gitkeep`
 - `output/qa/.gitkeep`
 - `pyproject.toml`
+- `proxies.txt.example`
 - `requirements.txt`
 - `src/kcpc/__init__.py`
 - `src/kcpc/checkpoint_db.py`
@@ -57,8 +59,11 @@
 - `src/kcpc/measurer.py`
 - `src/kcpc/normalizer.py`
 - `src/kcpc/pipeline.py`
+- `src/kcpc/qa_report.py`
+- `src/kcpc/qa_verifier.py`
 - `src/kcpc/signal_handler.py`
 - `src/kcpc/title_validator.py`
 - `tests/integration_real_ddg.md`
 - `tests/test_file_parsing.py`
 - `tests/test_title_validator.py`
+- `user_agents.txt.example`

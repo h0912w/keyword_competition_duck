@@ -44,3 +44,15 @@
 | User-Agent 순환 | `DDG_ROTATE_UA`, `DDG_UA_LIST` | `config-and-cli.md`, `workflow-and-failure-policy.md`, `module-contracts.md` |
 | 딜레이 무시 | `DDG_IGNORE_DELAY` | `config-and-cli.md`, `workflow-and-failure-policy.md` |
 | SSL 검증 우회 | `DDG_IGNORE_SSL` | `config-and-cli.md`, `workflow-and-failure-policy.md` |
+
+---
+## QA 검증용 Google API 추가 사항 (2026-04-26)
+
+QA 시에만 Google Search API를 사용하여 DDG 측정값의 신뢰성을 검증한다.
+
+| 항목 | 내용 | 반영 위치 |
+|---|---|
+| Google API 설정 가이드 | API 키, 검색 엔진 ID 생성 방법 | `google-api-setup-guide.md` |
+| QA용 Google API 통합 | 상관관계 분석, 리포트 생성 | `qa_verifier.py`, `qa_report.py` |
+| QA 계획 업데이트 | Google API 검증 절차 | `qa-plan.md` |
+| 환경 변수 | `GOOGLE_API_KEY`, `GOOGLE_SEARCH_ENGINE_ID`, `QA_USE_GOOGLE_API` | `config-and-cli.md`, `.env.example` |
