@@ -14,6 +14,9 @@
 | `logging_config.py` | 로그 포맷/핸들러 |
 | `signal_handler.py` | Ctrl+C 안전 종료 |
 | `exceptions.py` | 커스텀 예외 |
+| `glm_web_search.py` | GLM API Google 검색 결과 추정, 상관관계 분석 |
+| `qa_tester.py` | QA 테스트 실행, GLM API 검증 통합 |
+| `qa_websearch_verifier.py` | GLM 검증 결과 변환 및 리포트 생성 |
 
 모든 함수에 타입 힌트를 작성하고, 예외를 무조건 숨기지 않는다.
 
@@ -51,4 +54,38 @@ def measure_keyword(
     # 우회 옵션에 따른 proxy/ua 선택 로직
     # DDG.results() 호출
     # 지수 백오프 재시도 로직
+```
+
+### glm_web_search.py 상세 책임
+- GLM API 클라이언트 클래스 (`GLMClient`)
+  - Anthropic 호환 엔드포인트 연결
+  - Bearer 토큰 인증
+  - Rate Limiting (30 RPM, 2초 최소 간격)
+  - 세션 관리 및 컨텍스트 매니저
+- Google 검색 결과 추론
+  - 간단한 추론 프롬프트 사용 (web_search tool 불필요)
+  - Anthropic 응답 형식 변환
+- 숫자 추출 및 검증
+  - 복수 추출 전략 (정수, 콤마分隔, 텍스트 내 숫자)
+  - 최대값 1조 처리 (100억 초과 케이스 대응)
+- 상관관계 분석
+  - DDG Count vs Google 추전치 비교
+  - High/Medium/Low/None 분류
+- 결과 저장 및 리포트 생성
+  - JSON 형식 결과 저장
+  - Markdown 리포트 생성
+
+### qa_tester.py 추가 책임
+- 빈도 기반 테스트 단어 자동 생성
+- 실제 KCPC 파이프라인 실행 (subprocess)
+- GLM API 검증 자동 호출
+- 종합 QA 리포트 생성
+
+### 환경 변수 추가 (GLM API)
+```env
+# GLM API 설정
+GLM_API_KEY=your_api_key_here
+GLM_BASE_URL=https://api.z.ai/api/anthropic/v1/messages
+GLM_MODEL=glm-4.7
+GLM_TIMEOUT=30
 ```

@@ -31,6 +31,7 @@
 - `docs/database-schema.md`
 - `docs/glossary.md`
 - `docs/google-api-setup-guide.md`
+- `docs/google-blocking-rules.md`
 - `docs/implementation-sequence.md`
 - `docs/input-output-contract.md`
 - `docs/llm-vs-script-boundary.md`
@@ -40,6 +41,7 @@
 - `docs/project-operating-guide.md`
 - `docs/qa-plan.md`
 - `docs/source-requirements-map.md`
+- `docs/websearch-status-2026.md`
 - `docs/workflow-and-failure-policy.md`
 - `input/.gitkeep`
 - `logs/.gitkeep`
@@ -59,10 +61,14 @@
 - `src/kcpc/measurer.py`
 - `src/kcpc/normalizer.py`
 - `src/kcpc/pipeline.py`
+- `src/kcpc/qa_analyzer.py`
 - `src/kcpc/qa_report.py`
+- `src/kcpc/qa_tester.py`
 - `src/kcpc/qa_verifier.py`
+- `src/kcpc/qa_websearch_verifier.py`
 - `src/kcpc/signal_handler.py`
 - `src/kcpc/title_validator.py`
+- `scripts/run_websearch_verification.py`
 - `tests/integration_real_ddg.md`
 - `tests/test_file_parsing.py`
 - `tests/test_title_validator.py`

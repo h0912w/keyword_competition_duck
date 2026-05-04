@@ -1,0 +1,48 @@
+{
+  "timestamp": "2026-05-04T21:17:08.246566",
+  "method": "GLM API Google Search (Inference via Anthropic-compatible endpoint)",
+  "model": "glm-4.7",
+  "endpoint": "https://api.z.ai/api/anthropic/v1/messages",
+  "results": [
+    {
+      "keyword": "analysis",
+      "ddg_count": 9,
+      "google_result_count": 0,
+      "google_estimate": "none",
+      "correlation": "low",
+      "notes": "Connection Error: Invalid API key."
+    },
+    {
+      "keyword": "solution",
+      "ddg_count": 5,
+      "google_result_count": 0,
+      "google_estimate": "none",
+      "correlation": "low",
+      "notes": "Connection Error: Invalid API key."
+    },
+    {
+      "keyword": "you",
+      "ddg_count": 5,
+      "google_result_count": 0,
+      "google_estimate": "none",
+      "correlation": "low",
+      "notes": "Connection Error: Invalid API key."
+    },
+    {
+      "keyword": "ultra-rare-term-abc-716",
+      "ddg_count": 0,
+      "google_result_count": 0,
+      "google_estimate": "none",
+      "correlation": "high",
+      "notes": "Connection Error: Invalid API key."
+    },
+    {
+      "keyword": "you",
+      "ddg_count": 5,
+      "google_result_count": 0,
+      "google_estimate": "none",
+      "correlation": "low",
+      "notes": "Connection Error: Invalid API key."
+    }
+  ]
+}

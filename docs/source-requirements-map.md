@@ -21,6 +21,7 @@
 | 15~16 | 작업 순서/완료 기준 | 구현 순서, `CLAUDE.md` | 반영 |
 | 17~19 | 보완/주의/요약 | 관련 문서 전체 | 반영 |
 | **추가** | **DDG 차단 방지 정책** | **워크플로우, 모듈 계약, CLAUDE.md** | **반영** |
+| **추가** | **GLM API Google 검색 검증** | **original-design.md, config-and-cli.md, module-contracts.md** | **반영** |
 
 점검 결과: `README.md` 없이 `CLAUDE.md + docs + .claude` 구조로 원본 요구사항을 보존했다.
 
@@ -46,6 +47,44 @@
 | SSL 검증 우회 | `DDG_IGNORE_SSL` | `config-and-cli.md`, `workflow-and-failure-policy.md` |
 
 ---
+## GLM API Google 검색 검증 추가 사항 (2026-05-04)
+
+Google Search API 대신 GLM API를 사용한 검색 결과 추정 및 상관관계 분석 기능을 추가했다.
+
+### GLM API 검증 구현
+| 항목 | 내용 | 반영 위치 |
+|---|---|---|
+| Anthropic 호환 엔드포인트 | `https://api.z.ai/api/anthropic/v1/messages` | `original-design.md`, `config-and-cli.md` |
+| Bearer 인증 | `Authorization: Bearer {api_key}` 헤더 | `original-design.md`, `glm_web_search.py` |
+| 간단한 추론 프롬프트 | web_search tool 불필요 | `original-design.md`, `glm_web_search.py` |
+| Rate Limiting | 30 RPM, 2초 최소 간격 | `original-design.md`, `glm_web_search.py` |
+| 숫자 추출 | 최대 1조 처리, 복수 전략 | `glm_web_search.py` |
+| 상관관계 분석 | DDG vs Google 추정치 비교 | `glm_web_search.py`, `qa_tester.py` |
+
+### 환경 변수 추가
+| 변수 | 설명 | 반영 위치 |
+|---|---|---|
+| `GLM_API_KEY` | GLM API 키 | `.env`, `config-and-cli.md` |
+| `GLM_BASE_URL` | Anthropic 호환 엔드포인트 | `.env`, `config-and-cli.md` |
+| `GLM_MODEL` | 사용 모델 (glm-4.7) | `.env`, `config-and-cli.md` |
+| `GLM_TIMEOUT` | API 타임아웃 (30초) | `.env`, `config-and-cli.md` |
+
+### 상관관계 기준
+| DDG Count | Google 추정 | 상관관계 | 반영 위치 |
+|-----------|-------------|----------|---|
+| 7-10개 | high (>100K) | high | `glm_web_search.py` |
+| 4-6개 | medium (100-100K) | medium | `glm_web_search.py` |
+| 1-3개 | low (<100) | medium/low | `glm_web_search.py` |
+| 0개 | none (0) | high | `glm_web_search.py` |
+
+### 출력 파일
+| 파일 | 설명 | 반영 위치 |
+|---|---|---|
+| `glm_websearch_results.json` | 상세 검증 결과 데이터 | `input-output-contract.md` |
+| `glm_verification_report.md` | 상관관계 분석 리포트 | `input-output-contract.md` |
+
+---
+
 ## QA 검증 시스템 v2.0 (2026-04-26)
 
 QA 시에 Google API 없이 DDG 자체 검증 30가지 요소를 사용한다.

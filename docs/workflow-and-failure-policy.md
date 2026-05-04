@@ -1,7 +1,7 @@
 # 워크플로우 및 실패 정책
 
 ## 흐름
-입력 파싱 → 정제/중복 처리 → DB 초기화/복구 → DDG 검색 → title 검증 → DB 저장 → export → QA.
+입력 파싱 → 정제/중복 처리 → DB 초기화/복구 → DDG 검색 → title 검증 → DB 저장 → export → QA → **GLM API 검증**.
 
 ## 상태 전이
 `PENDING -> RUNNING -> DONE`, `PENDING -> RUNNING -> FAILED`, `PENDING -> SKIPPED_DUPLICATE`.
@@ -19,6 +19,10 @@
 | **429 Too Many Requests** | 지수 백오프 후 재시도, 지속 시 해당 키워드 `FAILED` |
 | **403 Forbidden** | User-Agent/헤더 검증 후 재시도, 지속 시 해당 키워드 `FAILED` |
 | **프록시 연결 실패** | 다음 프록시 시도, 모두 실패 시 기본 연결로 폴백 |
+| **GLM API 401** | API 키 검증, 실패 시 GLM 검증 스킵 및 경고 |
+| **GLM API 429** | 지수 백오프 후 재시도, 지속 시 해당 키워드 검증 실패 |
+| **GLM API 타임아웃** | 30초 후 타임아웃, 재시도 후 실패 시 해당 키워드 검증 실패 |
+| **GLM 숫자 추출 실패** | 기본값 0 사용, low correlation로 기록 |
 
 ## Ctrl+C
 현재 처리 상태가 불완전하게 남지 않도록 하고, 다음 실행에서 `RUNNING` 항목을 재처리한다.

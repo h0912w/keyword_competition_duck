@@ -332,6 +332,91 @@
 | 검증 방법 | 규칙 기반 검증 + DDG 자체 검증 |
 | 실패 시 처리 | QA 자동 재실행, 로그 기록 후 재시도 |
 
+### Step 9.5. GLM API Google 검색 결과 검증 (v2.1)
+
+| 항목 | 내용 |
+|---|---|
+| 처리 주체 | `glm_web_search` 모듈 |
+| 관련 스킬 | 없음 (코드 처리) |
+| 입력 | DDG 측정 결과 (키워드, DDG Count) |
+| 출력 | Google 검색 결과 추정치, 상관관계 분석 |
+| 코드 처리 | GLM API 호출, 추론 프롬프트, 숫자 추출 |
+| LLM 판단 | 없음 (GLM API가 내부적으로 수행) |
+| 성공 기준 | 상관관계 ≥ 60% (High + Medium) |
+| 검증 방법 | 규칙 기반 상관관계 계산 |
+| 실패 시 처리 | GLM API 오류 시 로그 기록, 상관관계 낮을 경우 경고 |
+
+#### GLM API 검증 원리
+
+**목적:** DuckDuckGo 측정값의 신뢰성을 Google 검색 결과 추정치와 비교하여 검증
+
+**방식:** GLM API의 추론 능력을 활용하여 Google 검색 결과 수를 추정
+
+**장점:**
+- Google 직접 크롤링 없음 (robots.txt 준수)
+- GLM 서버 IP 사용 (사용자 IP 보호)
+- 별도 Google Search API 키 불필요
+- 무료로 사용 가능
+
+**엔드포인트 설정:**
+```
+GLM_BASE_URL=https://api.z.ai/api/anthropic/v1/messages
+GLM_MODEL=glm-4.7
+```
+
+**인증 방식:**
+```python
+headers = {
+    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json",
+    "anthropic-version": "2023-06-01"
+}
+```
+
+**추론 프롬프트:**
+```
+"If you had to guess, approximately how many web pages mention '{keyword}'?
+Just give me a number between 0 and 1000000000000."
+```
+
+**숫자 추출 처리:**
+- 최대값: 1조 (1,000,000,000,000)
+- 초과 시 자동 상향 조정
+- 콤마 구분자 처리
+- 복수 추출 전략 (정수, 콤마分隔, 텍스트 내 숫자)
+
+**상관관계 분석 기준:**
+
+| DDG Count | Google 추정 | 상관관계 |
+|-----------|-------------|----------|
+| 7-10개 | high (>100K) | high |
+| 4-6개 | medium (100-100K) | medium |
+| 1-3개 | low (<100) | medium/low |
+| 0개 | none (0) | high |
+
+**QA 통과 기준:**
+- 상관관계 80% 이상: EXCELLENT
+- 상관관계 60-79%: GOOD
+- 상관관계 60% 미만: REVIEW REQUIRED
+
+**Rate Limiting:**
+- 최대 30 요청/분
+- 최소 2초 간격
+- 지수 백오프 재시도
+
+**출력 파일:**
+- `./output/qa/glm_websearch_results.json` - 상세 결과 데이터
+- `./output/qa/glm_verification_report.md` - 검증 리포트
+
+#### GLM API 검증 절차
+
+1. DDG 측정 완료 후 키워드 목록 추출
+2. 각 키워드에 대해 GLM API 호출
+3. Google 검색 결과 수 추정치 수신
+4. 숫자 추출 및 범위 검증
+5. 상관관계 계산
+6. 검증 리포트 생성
+
 ---
 
 # 3. LLM 판단 영역과 코드 처리 영역 구분

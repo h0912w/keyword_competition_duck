@@ -42,6 +42,16 @@ DDG_REPRODUCIBILITY_TRIALS=3
 # DDG 백엔드 교차 검증 허용 편차
 DDG_BACKEND_VARIANCE_TOLERANCE=1
 
+# GLM API Google 검색 검증 설정 (v2.1)
+# GLM API 키 (필수)
+GLM_API_KEY=your_api_key_here
+# GLM API 엔드포인트 (Anthropic 호환)
+GLM_BASE_URL=https://api.z.ai/api/anthropic/v1/messages
+# GLM 모델
+GLM_MODEL=glm-4.7
+# GLM API 타임아웃 (초)
+GLM_TIMEOUT=30
+
 # 데이터베이스 및 출력 경로
 DB_FILE_PATH=./data/kcpc_database.db
 LOG_FILE_PATH=./logs/kcpc.log

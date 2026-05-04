@@ -23,7 +23,8 @@
 | **로깅 명세** | `docs/logging-spec.md` | 로그 경로, 포맷, 레벨, 필수 로그 | 로그 구현 시 |
 | **운영 가이드** | `docs/project-operating-guide.md` | 설치, 실행 명령어, 산출물 경로 | 사용법 확인 시 |
 | **구현 순서** | `docs/implementation-sequence.md` | 개발 단계별 작업 순서 | 프로젝트 구현 시 |
-| **QA 계획** | `docs/qa-plan.md` | QA 절차, 테스트 데이터, 검증 항목 | QA 수행 시 |
+| **QA 계획** | `docs/qa-plan.md` | QA 절차, 테스트 데이터, 검증 항목, **GLM API 검증** | QA 수행 시 |
+| **Google 차단 규칙** | `docs/google-blocking-rules.md` | **GLM API 검증** 차단 방지 정책, 엔드포인트 설정 | GLM WebSearch 사용 시 |
 | **용어 사전** | `docs/glossary.md` | 프로젝트 관련 용어 정의 | 용어 혼동 시 |
 | **LLM/스크립트 경계** | `docs/llm-vs-script-boundary.md` | AI 판단 영역과 코드 처리 영역 구분 | 작업 분배 시 |
 | **파일 목록** | `docs/file-list.md` | 프로젝트 전체 파일 목록 | 파일 위치 확인 시 |
@@ -104,7 +105,8 @@ KCPC는 `.txt`, `.csv`, `.xlsx` 첫 번째 열의 영어 키워드 목록을 입
 7. 미완료 항목 반복 처리
 8. Excel/CSV export
 9. `qa-pipeline-verifier` 실제 파이프라인 검증
-10. QA 리포트 작성 및 PASS/FAIL 판정
+10. **GLM API Google 검색 결과 검증 (상관관계 분석)**
+11. QA 리포트 작성 및 PASS/FAIL 판정
 
 ---
 
@@ -136,7 +138,7 @@ KCPC는 `.txt`, `.csv`, `.xlsx` 첫 번째 열의 영어 키워드 목록을 입
 - SQLite DB와 로그 파일이 생성된다.
 - 중단 후 재실행 시 이어서 진행한다.
 - 최종 Excel/CSV가 지정 경로에 생성된다.
-- **QA 시 Google Search API로 실제 검색 결과 수를 검증한다** (QA 전용).
-- **DDG 측정값과 Google API 측정값의 상관관계를 분석한다**.
+- **QA 시 GLM API로 Google 검색 결과 추정치를 검증한다** (QA 전용).
+- **DDG 측정값과 GLM 추정치의 상관관계를 분석한다 (High+Medium ≥ 60%)**.
 - QA 리포트 최종 판정이 PASS다.
 - `docs/source-requirements-map.md` 기준 원본 설계서 대비 누락 0% 검토가 완료됐다.
